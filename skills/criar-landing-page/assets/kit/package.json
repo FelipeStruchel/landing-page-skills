@@ -1,0 +1,8 @@
+{
+  "name": "criar-landing-kit",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test \"test/*.test.js\"" },
+  "dependencies": { "yaml": "^2.8.0" },
+  "optionalDependencies": { "playwright": "^1.50.0" }
+}

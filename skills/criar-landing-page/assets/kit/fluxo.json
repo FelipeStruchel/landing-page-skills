@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "fases": {
+    "descoberta":     { "arquivo": "01-negocio-e-escopo.md", "requer": [],                                          "alto_risco": false },
+    "direcao-visual": { "arquivo": "direcao-visual.md",      "requer": ["descoberta"],                              "alto_risco": false },
+    "plano":          { "arquivo": "plano.md",               "requer": ["descoberta", "direcao-visual"],            "alto_risco": false },
+    "software-extra": { "arquivo": "03-decisoes.md",         "requer": ["descoberta", "plano"],                     "alto_risco": true  },
+    "publicacao":     { "arquivo": "publicacao.md",          "requer": ["descoberta", "direcao-visual", "plano"],   "alto_risco": true,
+                        "requer_se": { "software-extra": "tem:software-extra" } }
+  },
+  "invalida_aprovacao": ["hash-diferente", "reabrir"],
+  "irreversiveis": ["publicacao"]
+}

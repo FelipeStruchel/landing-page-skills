@@ -1,0 +1,9 @@
+{
+  "proibidos": [
+    { "re": "lorem ipsum", "msg": "lorem ipsum" },
+    { "re": "fonts\\.(googleapis|gstatic)\\.com", "msg": "Google Fonts em runtime (auto-hospedar)" }
+  ],
+  "obrigatorios": [
+    { "contem": "https://wa.me/", "msg": "link wa.me ausente (trocar pelo número do cliente)" }
+  ]
+}

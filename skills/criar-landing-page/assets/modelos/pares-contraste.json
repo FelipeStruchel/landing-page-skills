@@ -1,0 +1,4 @@
+[
+  { "nome": "texto no fundo da página", "fg": "#2A2623", "bg": "#F6F1E9", "min": 4.5 },
+  { "nome": "texto do botão principal", "fg": "#FFFFFF", "bg": "#0F6E5B", "min": 4.5 }
+]
