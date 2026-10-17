@@ -6,7 +6,7 @@ Dados vivos: `~/projetos/criar-site/` (ou `CRIAR_SITE_ROOT`). Instalar uma vez: 
 
 | Script | Comando | O que verifica | O que **não** prova |
 |---|---|---|---|
-| check-gate | `node check-gate.js --file <arq.md> --fase <nome>` / `--cliente <nome> --antes-de <fase>` | YAML válido, `schema_version`, fase, `aprovado` booleano, hash atual, auditoria, via `comando` nas fases de alto risco | Que a decisão aprovada esteja certa, nem quem digitou o aceite |
+| check-gate | `node check-gate.js --file <arq.md> --fase <nome>` / `--cliente <nome> --antes-de <fase>` | YAML válido, `schema_version`, fase, `aprovado` booleano, hash atual, auditoria, via `comando` nas fases de alto risco | Que a decisão aprovada esteja certa, nem quem digitou o aceite. `auditoria.log` é anexável por quem edita arquivos: YAML e auditoria forjados em conjunto passam (limite declarado no spec 3.9) |
 | approve | `node approve.js --file <arq.md> --fase <nome> --via <comando\|conversa> [--citacao "<texto>"] [--reabrir]` | Grava aprovação com hash, citação e auditoria | Que o Felipe aprovou de fato (o agente roda como o mesmo usuário) |
 | resolve-pendencia | `node resolve-pendencia.js --file <arq.md> --id P-001 --valor "<texto>" [--fonte "<texto>"]` | Só troca o marcador; recusa campo material; invalida edição manual | O significado do valor: o agente avalia o impacto |
 | authorize | `! node authorize.js --cliente <nome> --fase publicacao --acao publicar --destino <destino>` | Token de uso único, 15 min, amarrado a hash e destino | Segurança contra um agente malicioso com acesso ao disco |
@@ -21,5 +21,5 @@ Dados vivos: `~/projetos/criar-site/` (ou `CRIAR_SITE_ROOT`). Instalar uma vez: 
 | processar-feedback | `node processar-feedback.js listar [--contar]` / `marcar --versao v1 [--cliente <nome> --ids E01,E02]` | Entradas sem `processado: v<N>` (inclui formato antigo) | Que a lição foi bem generalizada |
 | check-regras | `node check-regras.js --file <_regras-vivas.md> [--tags …] [--listar]` | Campos, vocabulário, evidência real, conflitos | Que a regra seja boa |
 
-Desvio do spec: `publicar` executa só com `--executar` (o padrão é dry-run).
-Última execução dos testes (2026-10-15, Tasks 1-10): ℹ tests 78 ℹ pass 78 ℹ fail 0 ℹ skipped 0 
+Desvio do spec: `publicar` executa só com `--executar` (o padrão é dry-run). `PUBLICAR_FALHA_APOS` e `PUBLICAR_ATRASO_MS` são ganchos só de teste. O hash do artefato cobre tudo menos o próprio `artefato_sha256` (inclui `aprovado`, `data` e `aprovacao`). `--antes-de <fase>` também reprova se houver pendência `pendente` com `bloqueia: <fase>`. `publicar` exige `inventario-assets.md` (tabela vazia basta sem imagens).
+Última execução dos testes (2026-10-17, após a revisão final): ℹ tests 94 ℹ pass 94 ℹ fail 0 ℹ skipped 0 

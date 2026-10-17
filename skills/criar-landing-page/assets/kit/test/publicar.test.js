@@ -14,6 +14,7 @@ function cenario() {
   conv("01-negocio-e-escopo.md", "descoberta"); conv("direcao-visual.md", "direcao-visual"); conv("plano.md", "plano");
   const pub = escreveArtefato(dir, "publicacao.md", FM("publicacao"));
   run("approve.js", ["--file", pub, "--fase", "publicacao", "--via", "comando"], { raiz });
+  fs.copyFileSync(path.join(process.env.HOME, ".claude/skills/criar-landing-page/assets/modelos/inventario-assets.md"), path.join(dir, "inventario-assets.md"));
   const site = path.join(tmpRaiz(), "site"); fs.mkdirSync(site);
   fs.writeFileSync(path.join(site, "index.html"), "<h1>novo</h1>");
   const destPai = tmpRaiz(); const dest = path.join(destPai, "www");

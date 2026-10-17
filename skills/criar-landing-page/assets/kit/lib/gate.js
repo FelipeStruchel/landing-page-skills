@@ -43,5 +43,10 @@ export function antesDe(dirCliente, fase) {
     const r = verificar(path.join(dirCliente, fluxo.fases[f].arquivo), f);
     if (r.codigo !== EXIT.OK) return r;
   }
+  const d01 = verificar(path.join(dirCliente, fluxo.fases.descoberta.arquivo), "descoberta");
+  if (d01.codigo === EXIT.OK) {
+    const abertas = (d01.fm.pendencias ?? []).filter((p) => p.bloqueia === fase && p.status === "pendente");
+    if (abertas.length) return { codigo: EXIT.FAIL, msg: `pendência(s) bloqueiam ${fase}: ${abertas.map((p) => `${p.id} (${p.campo})`).join(", ")}` };
+  }
   return { codigo: EXIT.OK, msg: `pré-condições de ${fase} ok` };
 }

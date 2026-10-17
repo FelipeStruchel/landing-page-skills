@@ -22,11 +22,13 @@ test("parse devolve fm null sem frontmatter e lança em YAML inválido", () => {
   assert.throws(() => parse("---\nfase: [quebrado\n---\nx"));
 });
 
-test("hashArtefato ignora campos de aprovação e muda com o corpo ou o resto do frontmatter", () => {
+test("hashArtefato ignora só artefato_sha256 e muda com aprovação, citação, corpo ou resto do frontmatter", () => {
   const base = { schema_version: 1, fase: "descoberta", aprovado: false };
   const a = hashArtefato(stringify(base, "corpo\n"));
-  const b = hashArtefato(stringify({ ...base, aprovado: true, data: "2026-10-15", artefato_sha256: "x", aprovacao: { via: "comando" } }, "corpo\n"));
-  assert.equal(a, b);
+  assert.equal(a, hashArtefato(stringify({ ...base, artefato_sha256: "qualquer" }, "corpo\n")));
+  assert.notEqual(a, hashArtefato(stringify({ ...base, aprovado: true }, "corpo\n")));
+  assert.notEqual(a, hashArtefato(stringify({ ...base, aprovacao: { via: "comando" } }, "corpo\n")));
+  assert.notEqual(a, hashArtefato(stringify({ ...base, data: "2026-10-15" }, "corpo\n")));
   assert.notEqual(a, hashArtefato(stringify(base, "corpo alterado\n")));
   assert.notEqual(a, hashArtefato(stringify({ ...base, tags: ["a"] }, "corpo\n")));
 });

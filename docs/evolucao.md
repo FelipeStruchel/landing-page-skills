@@ -31,3 +31,14 @@ Fluxo reduzido (mesmo briefing, **sem** check-gate, approve, resolve-pendencia, 
 - O que o reduzido **não** tem: aprovação ligada a hash, trilha de auditoria, bloqueio de edição escondida, resolução de pendência verificável, inventário com hash.
 
 **Leitura (3 linhas):** o fluxo completo custou cerca de 1,7x o tempo e 2,4x as chamadas do reduzido neste trecho, em valores absolutos pequenos (cerca de 50 s a mais). Esta única rodada não mostra um defeito evitado pelos gates (o benefício deles é para a edição e a publicação posteriores, que não rodaram aqui), então o custo é medido e o ganho só é argumentado. Recomendação: seguir para o nível 3 sem simplificar nada, e reavaliar com um segundo cliente que passe por reabertura e publicação.
+
+## v1 (migração inicial), 2026-10-17
+
+- **Antes:** 88 entradas `processado: não` (cliente-a 32, cliente-b 31, cliente-c 25). **Depois:** 0; todas `processado: v1`. A marcação só acrescentou a linha `- processado: v1` ao fim de cada entrada (88 linhas, 0 removidas; cópias de segurança feitas antes).
+- **`_regras-vivas.md` v1:** 34 regras, todas validadas por `check-regras.js` (campos, vocabulário de tags, evidência `cliente/E<nn>` existente). Status: 26 `ativa`, 8 `candidata`, 0 `hipotese`, 0 `aposentada`. Tabela de candidatas e itens não promovidos em `_testes-skills/migracao/candidatas.md`.
+- **Paralelos traçados:** cache do Cloudflare nos três clientes (R-010, com tag `tem:cloudflare`); verificação do servido e revisão independente em dois clientes; foto e direitos, e raspagem logada, em dois clientes; área de atuação sem loja só na Cliente B, condicionada a tag.
+- **Preferência não virou regra global:** lições de uma ocorrência ficaram `candidata` (R-012, R-015, R-017, R-021, R-027, R-028, R-029, R-032).
+- **Poda:** nada podado nesta primeira passada (não havia regras anteriores a podar).
+- **Teste de seleção por tags** (`selecao.test.mjs`): o cliente com agenda carrega a regra de fonte da verdade e o B2B sem agenda não; toda regra geral obrigatória é carregada em qualquer conjunto de tags.
+- **Métricas de base:** aprovações reabertas 0; regressões 0; falsos positivos de validador relatados 0; vezes em que o Felipe precisou lembrar o registro de feedback: 0 (o registro ainda não foi exercido em projeto real).
+- **Descrições das skills:** teste de disparo 28 de 28 na primeira rodada; nenhuma `description` foi alterada.

@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { parse } from "./fm.js";
 
-const EXCLUIDOS = ["aprovado", "data", "aprovacao", "artefato_sha256"];
+const EXCLUIDOS = ["artefato_sha256"]; // só o próprio hash (circular); aprovado, data e aprovacao entram
 export const sha256 = (s) => createHash("sha256").update(s).digest("hex"); // aceita string ou Buffer
 
 const ordena = (v) =>

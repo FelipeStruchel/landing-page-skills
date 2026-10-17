@@ -35,10 +35,9 @@ executar(() => {
   const g = verificar(path.join(dir, fluxo.fases.publicacao.arquivo), "publicacao");
   if (g.codigo !== EXIT.OK) throw new Falha(g.codigo, `REPROVADO: ${g.msg}`);
 
-  if (fs.existsSync(path.join(dir, "inventario-assets.md"))) {
-    const r = spawnSync("node", [path.join(aqui, "check-assets.js"), "--root", dir, "--fase", "publicacao", "--site", root], { encoding: "utf8", env: process.env });
-    if (r.status !== 0) throw new Falha(EXIT.FAIL, `REPROVADO: check-assets\n${r.stdout}${r.stderr}`);
-  }
+  if (!fs.existsSync(path.join(dir, "inventario-assets.md"))) throw new Falha(EXIT.FAIL, "REPROVADO: inventario-assets.md ausente (o inventário é obrigatório desde a descoberta; sem imagens, uma tabela vazia basta)");
+  const ca = spawnSync("node", [path.join(aqui, "check-assets.js"), "--root", dir, "--fase", "publicacao", "--site", root], { encoding: "utf8", env: process.env });
+  if (ca.status !== 0) throw new Falha(EXIT.FAIL, `REPROVADO: check-assets\n${ca.stdout}${ca.stderr}`);
 
   const destino = normDestino(v.dest);
   const ts = new Date().toISOString().replace(/\D/g, "").slice(0, 14);
@@ -57,9 +56,13 @@ executar(() => {
     return;
   }
 
-  const erro = validarToken(lerToken(dir), { fase: "publicacao", acao: "publicar", destino, hash: g.hash });
-  if (erro) throw new Falha(EXIT.FORBIDDEN, erro);
-  comTrava(dir, "estado", () => gravarToken(dir, { ...lerToken(dir), usado: true, usado_em: new Date().toISOString() }));
+  comTrava(dir, "estado", () => {
+    const tok = lerToken(dir);
+    const erro = validarToken(tok, { fase: "publicacao", acao: "publicar", destino, hash: g.hash });
+    if (erro) throw new Falha(EXIT.FORBIDDEN, erro);
+    if (process.env.PUBLICAR_ATRASO_MS) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, Number(process.env.PUBLICAR_ATRASO_MS)); // gancho de teste: alarga a janela dentro da trava
+    gravarToken(dir, { ...tok, usado: true, usado_em: new Date().toISOString() });
+  });
 
   const novo = `${destino}.novo-${ts}`;
   const existia = fs.existsSync(destino);

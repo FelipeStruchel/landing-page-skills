@@ -29,10 +29,10 @@ test("editar o corpo depois de aprovar → desatualizado (6)", () => {
 
 test("forjar aprovado:true com hash correto mas sem auditoria → 4", () => {
   const { raiz, dir } = setup();
-  const texto = stringify(FM("descoberta"), "# corpo\n");
-  const hash = hashArtefato(texto);
+  const forjado = { ...FM("descoberta"), aprovado: true, aprovacao: { via: "conversa", citacao: "x" } };
+  const hash = hashArtefato(stringify(forjado, "# corpo\n"));
   const f = path.join(dir, "01-negocio-e-escopo.md");
-  fs.writeFileSync(f, stringify({ ...FM("descoberta"), aprovado: true, artefato_sha256: hash, aprovacao: { via: "conversa", citacao: "x" } }, "# corpo\n"));
+  fs.writeFileSync(f, stringify({ ...forjado, artefato_sha256: hash }, "# corpo\n"));
   const r = run("check-gate.js", ["--file", f, "--fase", "descoberta"], { raiz });
   assert.equal(r.code, 4);
   assert.match(r.err, /auditoria/);
@@ -71,13 +71,27 @@ test("fase de alto risco: conversa → 7; comando → 0 e gate 0", () => {
   assert.equal(run("check-gate.js", ["--file", f, "--fase", "publicacao"], { raiz }).code, 0);
 });
 
-test("alto risco aprovado por conversa (forjado no YAML + auditoria falsa) → 5", () => {
+test("rebaixar via:comando para conversa depois da aprovação invalida o hash (6)", () => {
   const { raiz, dir } = setup();
   const f = escreveArtefato(dir, "publicacao.md", FM("publicacao"));
   run("approve.js", ["--file", f, "--fase", "publicacao", "--via", "comando"], { raiz });
-  const txt = fs.readFileSync(f, "utf8").replace("via: comando", "via: conversa");
-  fs.writeFileSync(f, txt);
-  assert.equal(run("check-gate.js", ["--file", f, "--fase", "publicacao"], { raiz }).code, 5);
+  fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace("via: comando", "via: conversa"));
+  assert.equal(run("check-gate.js", ["--file", f, "--fase", "publicacao"], { raiz }).code, 6);
+});
+
+test("LIMITE ACEITO (spec 3.9): YAML e auditoria forjados em conjunto passam no gate; alto risco por conversa ainda reprova (5)", () => {
+  const { raiz, dir } = setup();
+  const forjado = { ...FM("publicacao"), aprovado: true, aprovacao: { via: "conversa", citacao: "x" } };
+  const hash = hashArtefato(stringify(forjado, "# corpo\n"));
+  const f = path.join(dir, "publicacao.md");
+  fs.writeFileSync(f, stringify({ ...forjado, artefato_sha256: hash }, "# corpo\n"));
+  fs.appendFileSync(path.join(dir, "auditoria.log"), JSON.stringify({ ts: "x", op: "approve", fase: "publicacao", hash, via: "conversa" }) + "\n");
+  assert.equal(run("check-gate.js", ["--file", f, "--fase", "publicacao"], { raiz }).code, 5, "via conversa em fase de alto risco");
+  const viaComando = { ...forjado, aprovacao: { via: "comando" } };
+  const h2 = hashArtefato(stringify(viaComando, "# corpo\n"));
+  fs.writeFileSync(f, stringify({ ...viaComando, artefato_sha256: h2 }, "# corpo\n"));
+  fs.appendFileSync(path.join(dir, "auditoria.log"), JSON.stringify({ ts: "x", op: "approve", fase: "publicacao", hash: h2, via: "comando" }) + "\n");
+  assert.equal(run("check-gate.js", ["--file", f, "--fase", "publicacao"], { raiz }).code, 0, "forja total é o limite declarado: o agente tem acesso ao disco");
 });
 
 test("--reabrir derruba a aprovação", () => {

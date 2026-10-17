@@ -95,7 +95,7 @@ pendencias:
     status: pendente        # pendente | resolvida
     # a classe de impacto é DERIVADA do campo (tabela abaixo); o agente não a preenche
     bloqueia: publicacao    # fase que ela bloqueia (ver 3.4)
-resolucoes: []              # log: id, valor, data, hash anterior e novo
+resolucoes: []              # log: id, valor, data, hash anterior (o hash novo fica na auditoria.log: gravá-lo aqui seria circular, pois resolucoes entra no hash)
 ```
 
 - No corpo, o ponto pendente é um marcador `{{PENDENTE:P-001}}`.
@@ -192,7 +192,7 @@ Uma preferência de um cliente não vira regra global só por estar registrada (
 | Autorização da **ação** (o Felipe permite uma operação específica) | Token de uso único (abaixo) |
 | **Integridade** do artefato (não mudou depois) | Hash do arquivo inteiro, verificado por `check-gate.js` |
 
-**Autorização de ação, para as de alto risco (publicação, stack/rede):** o Felipe roda `! node authorize.js --fase <nome> --acao <acao> --destino <destino> --cliente <nome>`. O script lê o hash atual do artefato e grava um token em `<cliente>/.autorizacao` com fase, ação, destino exato, hash, validade (15 minutos) e uso único. O `publicar.sh` (e o fluxo de stack) **reverifica tudo imediatamente antes de escrever**: token existe, não expirou, destino e hash batem; depois consome o token. Fronteira de confiança declarada: o agente roda como o mesmo usuário e, tecnicamente, poderia forjar o arquivo; o ganho é que o caminho normal exige um ato do Felipe, amarrado ao hash e ao destino, e qualquer desvio aparece na auditoria. Não há criptografia nem armazenamento fora do alcance do agente, e o spec não afirma que há.
+**Autorização de ação (publicação; revisão final: para stack/rede em `software-extra` vale a aprovação de conteúdo via comando do Felipe antes de implementar, porque não existe script de infraestrutura que verifique um token):** o Felipe roda `! node authorize.js --fase <nome> --acao <acao> --destino <destino> --cliente <nome>`. O script lê o hash atual do artefato e grava um token em `<cliente>/.autorizacao` com fase, ação, destino exato, hash, validade (15 minutos) e uso único. O `publicar.sh` (e o fluxo de stack) **reverifica tudo imediatamente antes de escrever**: token existe, não expirou, destino e hash batem; depois consome o token. Fronteira de confiança declarada: o agente roda como o mesmo usuário e, tecnicamente, poderia forjar o arquivo; o ganho é que o caminho normal exige um ato do Felipe, amarrado ao hash e ao destino, e qualquer desvio aparece na auditoria. Não há criptografia nem armazenamento fora do alcance do agente, e o spec não afirma que há.
 
 **Escrita segura de estado:** uma biblioteca compartilhada `assets/kit/lib/` oferece escrita em arquivo temporário com renomeação atômica, conferência do hash anterior antes de aceitar uma atualização (otimista; se mudou, recusa), trava de diretório e ids de operação para retomada idempotente. Todo script que altera artefato de fase, inventário ou registro usa essa biblioteca.
 
